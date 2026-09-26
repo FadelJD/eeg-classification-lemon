@@ -28,7 +28,7 @@ CHANNELS = ["Fp1", "Fp2", "F7", "F3", "Fz", "F4", "F8", "T7", "C3", "Cz", "C4",
             "T8", "P7", "P3", "Pz", "P4", "P8", "O1", "O2"]
 
 
-def make_cache(out_dir, n_subjects=20, seed=0, effect=0.8):
+def make_cache(out_dir, n_subjects=20, seed=0, effect=0.35):
     rng = np.random.default_rng(seed)
     subjects = [f"synth-{i:02d}" for i in range(n_subjects)]
     y_subj = np.array([i % 2 for i in range(n_subjects)])          # 1 = female (positive)
