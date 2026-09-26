@@ -70,3 +70,11 @@ def test_uses_only_its_arguments(synth, small_cfg, monkeypatch):
     keep = np.isin(g, np.unique(g)[:14])
     idx = S.select_features(X[keep], y[keep], g[keep], small_cfg, 7)
     assert len(idx) == 34
+
+
+def test_parallel_trials_match_serial(synth, small_cfg):
+    small_cfg["selection"]["n_jobs"] = 1
+    a = S.rank_matrix(synth["X"], synth["y"], synth["subjects"], small_cfg, 3)
+    small_cfg["selection"]["n_jobs"] = 2
+    b = S.rank_matrix(synth["X"], synth["y"], synth["subjects"], small_cfg, 3)
+    np.testing.assert_array_equal(a, b)

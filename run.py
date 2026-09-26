@@ -41,6 +41,7 @@ def smoke_config(cfg):
     cfg["permutation"]["n_permutations"] = s["n_permutations"]
     cfg["models"] = s["models"]
     cfg["selection"]["xgb_params"].update(s.get("selection_xgb_params") or {})
+    cfg["selection"]["n_jobs"] = s.get("selection_n_jobs", 1)
     for name, params in (s.get("model_params") or {}).items():
         cfg["model_params"].setdefault(name, {}).update(params)
     return cfg

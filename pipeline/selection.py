@@ -10,6 +10,7 @@ select_features only sees the arrays it is given, so in-fold selection cannot le
 from __future__ import annotations
 
 import numpy as np
+from joblib import Parallel, delayed
 from xgboost import XGBClassifier
 
 
@@ -41,7 +42,8 @@ def rank_matrix(X, y, groups, cfg, rng) -> np.ndarray:
     sel = cfg["selection"]
     subjects = np.unique(groups)
     n_take = max(2, int(round(sel["subject_frac"] * len(subjects))))
-    cols = []
+    # draw every subsample and seed first, so results do not depend on n_jobs
+    trials = []
     for _ in range(sel["n_trials"]):
         for _attempt in range(100):
             chosen = rng.choice(subjects, size=n_take, replace=False)
@@ -50,7 +52,9 @@ def rank_matrix(X, y, groups, cfg, rng) -> np.ndarray:
                 break
         else:
             raise ValueError("could not draw a subject subsample containing both classes")
-        cols.append(rank_once(X[mask], y[mask], cfg, seed=rng.integers(2**31 - 1)))
+        trials.append((mask, int(rng.integers(2**31 - 1))))
+    cols = Parallel(n_jobs=sel.get("n_jobs", 1))(
+        delayed(rank_once)(X[mask], y[mask], cfg, seed) for mask, seed in trials)
     return np.stack(cols, axis=1)
 
 

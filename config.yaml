@@ -67,6 +67,7 @@ selection:
   importance_type: gain                            # paper: ? ("importance"). GUESS
   aggregation: first_appearance                    # paper: earliest rank across trials wins. Alt: mean_rank
   seed: 0                                          # GUESS
+  n_jobs: -1                                       # GUESS: trials run in parallel; results do not depend on it
   xgb_params: {n_estimators: 100, max_depth: 3, learning_rate: 0.1, n_jobs: 1}  # paper: ?. GUESS
 
 cv:
@@ -102,4 +103,5 @@ smoke:                                             # brief: overrides for run.py
   n_permutations: 3                                # GUESS: keeps the smoke run under a few seconds
   models: [xgb, logreg, rf, svm_rbf, mlp]          # GUESS
   selection_xgb_params: {n_estimators: 20}         # GUESS: merged into selection.xgb_params for speed
+  selection_n_jobs: 1                              # GUESS: process start-up costs more than tiny fits
   model_params: {rf: {n_estimators: 50}, xgb: {n_estimators: 20}}  # GUESS: merged into model_params for speed
