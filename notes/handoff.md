@@ -2,6 +2,12 @@
 
 Everything here was built and tested on synthetic data only. No LEMON file has been read, downloaded or processed in the cloud session. Open questions that affect the cached features are in `notes/QUESTIONS.md`: **answer items 1–4 before running `extract`.**
 
+## Stage 2 results (real LEMON cache, `results/table.csv`)
+
+Without leakage, coherence predicts sex above chance but well below the paper: the best in-fold model (XGB on 34 features selected inside each training fold) reaches subject-level AUC 0.72 ± 0.02, and logistic regression on all 855 features does as well or better (0.74 ± 0.01), so the 34-feature selection adds nothing. Selecting the 34 on all subjects first, as the paper does, lifts every model by 0.03–0.09 AUC (best SVM 0.80 ± 0.02, still short of the paper's 0.89), and the label-permutation null of that pooled pipeline centres on 0.59 rather than 0.5, which measures the leak on its own. The pooled SVM beats all 50 permutations (p = 0.020, the smallest attainable with 50), so there is real signal, but the honest estimate is the in-fold one.
+
+Budget reductions: permutation test 100 → 50 permutations (32.5 s each, 100 projected at 54 min > 45). Recorded in the table's `notes` column. Timings in `results/timings.csv`.
+
 ## Commands to run locally, in order
 
 ```bash
