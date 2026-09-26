@@ -1,6 +1,7 @@
 """Model zoo: name -> sklearn Pipeline(StandardScaler, model). Hyperparameters from cfg."""
 from __future__ import annotations
 
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
@@ -20,7 +21,8 @@ def _params(cfg, name):
 FACTORIES = {
     "logreg": lambda p: LogisticRegression(**p),
     "rf": lambda p: RandomForestClassifier(**p),
-    "svm_rbf": lambda p: SVC(kernel="rbf", probability=True, **p),
+    # Platt-scaled probabilities; SVC(probability=True) is deprecated from sklearn 1.9
+    "svm_rbf": lambda p: CalibratedClassifierCV(SVC(kernel="rbf", **p), ensemble=False),
     "mlp": lambda p: MLPClassifier(**p),
     "xgb": lambda p: XGBClassifier(verbosity=0, **p),
 }
