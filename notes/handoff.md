@@ -8,6 +8,18 @@ Without leakage, coherence predicts sex above chance but well below the paper: t
 
 Budget reductions: permutation test 100 → 50 permutations (32.5 s each, 100 projected at 54 min > 45). Recorded in the table's `notes` column. Timings in `results/timings.csv`.
 
+## Stage 2 extensions
+
+- **6.1 Age clusters** (best in-fold configuration, xgb / sections): young (138 subjects) AUC 0.74 ± 0.03, the same as the full sample. Older (63) is 0.50 ± 0.05, i.e. chance, but with only 6–7 test subjects per fold that estimate is very noisy. The whole-sample signal comes from the young cluster.
+- **6.2 Age residualised** inside each fold: 0.73 ± 0.03, against 0.72 unresidualised. Age (which differs by sex here: 49 % female among older subjects, 30 % among young) does not explain the result.
+- **6.4 Aggregation:** the pooled first-appearance and mean-rank top-34 sets share only 8 of 34 features.
+- **6.5 Sectioning** (3 seeds, reduced from 5 for budget): 5/5 sections gives 0.69 ± 0.04 and the paper-literal 5/8 gives 0.69 ± 0.03, against 0.72 ± 0.02 for the committed 8/5 on the same 3 seeds. That is a small edge for giving the minority class more sections, within about one seed-sd.
+- **6.6 (added)** Interpolation sensitivity: interpolation is more common in females (44 % vs 30 %; T7 alone 22 % vs 8 %). Logistic regression on all 855 features using only the 131 subjects with no interpolated channel reaches 0.75 ± 0.02, so interpolation is not driving the result.
+
+**Selection stability (6.3).** The 50 in-fold 34-feature sets overlap little: mean pairwise Jaccard is 0.17 ± 0.05 (range 0.06–0.33). 303 of the 855 features are selected at least once, and only 11 in at least half of the folds. The most stable are delta F7–T7 (88 % of folds), beta Cz–O2 (86 %), delta Fz–T7 (84 %), alpha P3–O2 (84 %) and gamma C4–P4 (72 %); none is one of the bridged pairs flagged in step 0. So a few fronto-temporal delta and parieto-occipital alpha/beta couplings carry a reproducible sex difference, while the rest of any particular 34-set is noise-driven. This fits the finding that all 855 features do as well as any selected 34, and it means the paper's single list of "chosen features" should not be read as a stable biomarker. Only 7 of the pooled 34 appear in at least half of the in-fold sets (`report/figures/selection_stability.png`).
+
+Budget reductions in stage 2: permutation test 100 → 50 permutations; 6.5 ablations 5 → 3 seeds. Both are recorded in the table's `notes` column. Total compute: 2 h 29 min (`results/timings.csv`).
+
 ## Commands to run locally, in order
 
 ```bash
