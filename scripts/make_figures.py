@@ -223,14 +223,17 @@ def fig_age_clusters():
         g = inf[(inf.model == df.model.iloc[0]) & (inf.representation == df.representation.iloc[0])]
         rows.insert(0, ("all ages", *_per_seed(g, "subject_auc"),
                         g.groupby("seed")["n_test_subjects"].sum().iloc[0]))
-    fig, ax = plt.subplots(figsize=(4.6, 3.0))
+    fig, ax = plt.subplots(figsize=(4.6, 3.2))
     for i, (lab, mu, sd, n) in enumerate(rows):
-        ax.bar(i, mu - 0.5, bottom=0.5, width=0.45, color=SLOTS[0])
-        ax.errorbar(i, mu, yerr=sd, color=INK2, elinewidth=1.5, capsize=0)
-        ax.text(i, max(mu + sd, 0.5) + 0.01, f"{mu:.2f}", ha="center", va="bottom", fontsize=8)
+        ax.errorbar(i, mu, yerr=sd, fmt="o", ms=7, color=SLOTS[0], mec=SURFACE, mew=1.5,
+                    elinewidth=1.5, capsize=0)
+        ax.text(i + 0.08, mu, f"{mu:.2f}", ha="left", va="center", fontsize=8, color=INK)
     ax.axhline(0.5, color=AXIS, lw=0.8)
+    ax.text(-0.45, 0.5, "chance", ha="left", va="bottom", fontsize=7, color=MUTED)
+    ax.set_xlim(-0.5, len(rows) - 0.5)
+    ax.set_ylim(0.4, 0.85)
     ax.set_xticks(range(len(rows)), [f"{lab}\n(n={n})" for lab, _, _, n in rows])
-    ax.set_ylabel("subject-level AUC")
+    ax.set_ylabel("subject-level AUC (mean ± sd over seeds)")
     ax.set_title(f"In-fold {df.model.iloc[0]} ({df.representation.iloc[0]}) within age clusters",
                  loc="left")
     ax.grid(axis="y")
