@@ -36,13 +36,13 @@ signal:
   sfreq: 250.0                                     # paper: 250 Hz; LEMON: 250 Hz (check_headers)
   condition: EC                                    # paper: ?; LEMON: EC or EO. GUESS, see QUESTIONS.md
   reference: keep                                  # paper: ?; LEMON: preprocessed as delivered. GUESS (keep | average)
-  missing_channel_policy: skip                     # paper: ?; LEMON: sub-032301 lacks T7. GUESS (skip | interpolate), see QUESTIONS.md
+  missing_channel_policy: interpolate               # paper: ?; LEMON: sub-032301 lacks T7. GUESS (skip | interpolate), see QUESTIONS.md
   discard_start_s: 5.0                             # paper: first 5 s discarded (3.2)
   epoch_s: 2.0                                     # paper: 2-s epochs (3.2)
 
 sections:
   section_epochs: 15                               # paper: 30-s sections = 15 epochs
-  per_class: {female: 5, male: 8}                  # paper: 5 per female, 8 per male (150F/91M). LEMON is 82F/146M, see QUESTIONS.md
+  per_class: {female: 8, male: 5}                  # paper: 5 per female, 8 per male (150F/91M). LEMON is 82F/146M, see QUESTIONS.md
   layout: consecutive                              # GUESS: non-overlapping, consecutive from the first kept epoch
   aggregation: across_epochs                       # paper: coherence over all epochs of the section (3.3, Eq. 1); corr uses mean over epochs (GUESS)
   long_epochs: 90                                  # paper: 3 min = 90 epochs for validation subjects (3.5)
