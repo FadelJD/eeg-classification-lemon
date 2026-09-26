@@ -7,3 +7,4 @@ step,seconds,started_utc,status,notes
 5_table,0.0,2026-09-26T08:47:19Z,ok,
 6.1_age_clusters,2076.3,2026-09-26T08:48:59Z,ok,xgb/sections in_fold
 6.2_residualised,1389.9,2026-09-26T09:23:37Z,ok,"xgb/sections in_fold, age regressed out of 855 per fold"
+6.3_stability,0.0,2026-09-26T09:46:49Z,ok,
