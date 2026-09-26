@@ -29,6 +29,8 @@ S2 = RES / "stage2"
 SURFACE, INK, INK2, MUTED, GRID, AXIS = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 SLOTS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"]   # validated, fixed order
 SEQ = LinearSegmentedColormap.from_list("seq_blue", ["#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"])
+SEQ0 = LinearSegmentedColormap.from_list(  # zero recedes into the surface
+    "seq_blue0", [SURFACE, "#cde2fb", "#86b6ef", "#3987e5", "#1c5cab", "#0d366b"])
 DIV = LinearSegmentedColormap.from_list("div_blue_red",
                                         ["#184f95", "#6da7ec", "#f0efec", "#ee8a89", "#a82f2f"])
 MODEL_ORDER = ["xgb", "mlp", "svm_rbf", "rf", "logreg"]
@@ -167,6 +169,12 @@ def fig_pooled_vs_in_fold():
                                    else "pooled selection (leaks)") if i == 0 else None)
         ax.axhline(0.5, color=AXIS, lw=0.8)
         ax.text(len(models) - 0.5, 0.5, "chance", ha="right", va="bottom", fontsize=7, color=MUTED)
+        if rep == "sections" and (S2 / "baselines.csv").exists():
+            b = pd.read_csv(S2 / "baselines.csv")
+            mu, _ = _per_seed(b[b.model == "logreg"], "subject_auc")
+            ax.axhline(mu, color=INK2, lw=1)
+            ax.text(1.55, mu + 0.004, f"logreg on all 855, no selection ({mu:.2f})",
+                    ha="left", va="bottom", fontsize=7, color=INK2)
         ax.set_xticks(range(len(models)), models)
         ax.set_title(f"test rows: {rep}", loc="left")
         ax.grid(axis="y")
@@ -186,10 +194,15 @@ def fig_permutation():
     p = json.loads((S2 / "permutation.json").read_text())
     fig, ax = plt.subplots(figsize=(5.2, 3.0))
     ax.hist(null, bins=20, color=SLOTS[0], alpha=0.85, edgecolor=SURFACE, linewidth=2)
+    ax.axvline(0.5, color=AXIS, lw=1)
+    ax.text(0.5, ax.get_ylim()[1] * 0.95, "chance 0.5 ", ha="right", va="top", fontsize=7,
+            color=MUTED)
+    ax.text(null.mean(), -0.02, f"null mean {null.mean():.2f}", transform=ax.get_xaxis_transform(),
+            ha="center", va="top", fontsize=7, color=INK2)
     ax.axvline(p["real"], color=INK, lw=2)
     ax.text(p["real"], ax.get_ylim()[1] * 0.95, f"  observed {p['real']:.3f}\n  p = {p['p']:.3f}",
             va="top", ha="left", fontsize=8, color=INK)
-    ax.set_xlabel("subject-level AUC")
+    ax.set_xlabel("subject-level AUC", labelpad=12)
     ax.set_ylabel("permutations")
     ax.set_title(f"Label-permutation null: {p['model']}, pooled, {p['representation']} "
                  f"({p['n_permutations']} permutations)", loc="left")
@@ -237,7 +250,7 @@ def fig_stability(cfg):
     n, npair = len(chans), len(chans) * (len(chans) - 1) // 2
     fig, axes = plt.subplots(1, len(bands), figsize=(3.0 * len(bands), 3.4))
     for b, (band, ax) in enumerate(zip(bands, axes)):
-        im = ax.imshow(_matrix(freq[b * npair:(b + 1) * npair], n), cmap=SEQ, vmin=0, vmax=1)
+        im = ax.imshow(_matrix(freq[b * npair:(b + 1) * npair], n), cmap=SEQ0, vmin=0, vmax=1)
         ax.set_title(band, loc="left")
         ax.set_xticks(range(n), chans, rotation=90, fontsize=5.5)
         ax.set_yticks(range(n), chans, fontsize=5.5)
