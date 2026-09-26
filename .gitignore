@@ -1,0 +1,11 @@
+.venv/
+lemon_tars/
+lemon_preproc/
+data/
+cache/
+__pycache__/
+.ipynb_checkpoints/
+*.npy
+*.set
+*.fdt
+*.tar.gz
