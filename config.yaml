@@ -101,3 +101,5 @@ smoke:                                             # brief: overrides for run.py
   n_splits: 3                                      # brief
   n_permutations: 3                                # GUESS: keeps the smoke run under a few seconds
   models: [xgb, logreg, rf, svm_rbf, mlp]          # GUESS
+  selection_xgb_params: {n_estimators: 20}         # GUESS: merged into selection.xgb_params for speed
+  model_params: {rf: {n_estimators: 50}, xgb: {n_estimators: 20}}  # GUESS: merged into model_params for speed
