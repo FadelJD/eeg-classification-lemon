@@ -79,6 +79,7 @@ def _cfg_for(cfg, root, cache):
                         cache_dir=str(cache))
     cfg["sections"]["per_class"] = {"female": 2, "male": 3}
     cfg["sections"]["long_epochs"] = 20
+    cfg["signal"]["missing_channel_policy"] = "skip"  # independent of the committed choice
     return cfg
 
 
@@ -114,3 +115,17 @@ def test_interpolate_policy_keeps_subject_and_cache_does_not_leak(fake_dataset, 
     cfg["signal"]["missing_channel_policy"] = "skip"
     F.extract_all(cfg)
     assert "synth-m2" not in set(F.load_cache(tmp_path / "cache")["subjects"])
+
+
+def test_reassembly_from_subject_cache_without_raw_files(fake_dataset, tmp_path, cfg):
+    cfg = _cfg_for(cfg, fake_dataset, tmp_path / "cache")
+    F.extract_all(cfg)
+    first = F.load_cache(tmp_path / "cache")
+    # new section counts, raw files gone, per-subject cache kept elsewhere
+    cfg["paths"].update(preproc_dir=str(tmp_path / "no_raw"), cache_dir=str(tmp_path / "re"),
+                        subject_cache_dir=str(tmp_path / "cache" / "subjects"))
+    cfg["sections"]["per_class"] = {"female": 1, "male": 1}
+    F.extract_all(cfg)
+    re = F.load_cache(tmp_path / "re")
+    assert list(re["subjects"]) == ["synth-f1", "synth-m1"]
+    np.testing.assert_array_equal(re["X"], first["X"][[0, 2]])
