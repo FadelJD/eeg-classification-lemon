@@ -11,6 +11,7 @@
     python scripts/stage2.py stability     # 6.3
     python scripts/stage2.py aggregation   # 6.4
     python scripts/stage2.py sectioning    # 6.5 (needs cache/subjects/)
+    python scripts/stage2.py interp_sensitivity  # 6.6 (added): subjects without interpolation
 
 Per-fold results go to results/stage2/<step>.csv; every step appends to results/timings.csv.
 """
@@ -431,6 +432,22 @@ def step_sectioning(args):
             save(pd.concat(frames), "sectioning")
 
 
+def step_interp_sensitivity(args):
+    """6.6 (added): baseline on subjects with no interpolated channel only.
+
+    Interpolation is more common in females (44 % vs 30 %; T7 22 % vs 8 %), so the
+    all-subject numbers could partly reflect interpolation rather than sex.
+    """
+    cfg, c = cfg_real(), load()
+    sdir = CACHE / "subjects" / F.feature_hash(cfg)
+    clean = [f.stem for f in sorted(sdir.glob("*.npz")) if len(np.load(f)["interpolated"]) == 0]
+    with timed("6.6_interp_sensitivity", f"logreg on 855, {len(clean)} subjects without "
+                                         "interpolated channels"):
+        res = run_eval(subset(c, clean), "logreg", cfg, None, "sections")
+        res["n_subjects"] = len(clean)
+        save(res, "interp_sensitivity")
+
+
 # ---------------------------------------------------------------- 5 table
 
 TABLE_COLS = ["model", "selection", "representation", "level", "metric", "mean", "std",
@@ -485,8 +502,10 @@ def build_table():
                          "metric": "auc", "mean": mean, "std": std, "n_seeds": n,
                          "notes": f"6.1 trained and tested within the {cl} cluster "
                                   f"({g['n_test_subjects'].groupby(g['seed']).sum().iloc[0]} "
-                                  f"subjects, {g['n_splits'].iloc[0]} splits); "
-                                  f"subject bal_acc {ba:.3f}"})
+                                  f"subjects, {g['n_splits'].iloc[0]} splits"
+                                  + ("; 6-7 test subjects per fold, so fold AUCs are noisy"
+                                     if g["n_test_subjects"].max() < 10 else "")
+                                  + f"); subject bal_acc {ba:.3f}"})
     if (S2 / "residualised.csv").exists():
         g = pd.read_csv(S2 / "residualised.csv")
         mean, std, n = _agg(g, "subject", "auc")
@@ -513,6 +532,13 @@ def build_table():
                               f"{a['overlap']} shared"})
     if (S2 / "sectioning.csv").exists():
         df = pd.read_csv(S2 / "sectioning.csv")
+        ref = ""
+        if (S2 / "in_fold.csv").exists():   # main 8/5 run on the same seeds, for a fair comparison
+            inf = pd.read_csv(S2 / "in_fold.csv")
+            r = inf[(inf.model == df.model.iloc[0]) & (inf.representation == df.representation.iloc[0])
+                    & inf.seed.isin(df.seed.unique())]
+            rm, rs, rn = _agg(r, "subject", "auc")
+            ref = f"; main 8/5 on the same {rn} seeds: {rm:.3f} ± {rs:.3f}"
         for v, g in df.groupby("variant", sort=False):
             mean, std, n = _agg(g, "subject", "auc")
             rows.append({"model": g["model"].iloc[0], "selection": f"in_fold/{v}",
@@ -521,11 +547,21 @@ def build_table():
                          "notes": f"6.5 sections per subject female/male = "
                                   f"{v.split('_')[1]}/{v.split('_')[2]} "
                                   f"({g['n_sections'].iloc[0]} sections); seeds reduced 5 -> {n}"
-                                  f" (budget); subject bal_acc {_agg(g, 'subject', 'bal_acc')[0]:.3f}"
+                                  f" (budget); subject bal_acc {_agg(g, 'subject', 'bal_acc')[0]:.3f}{ref}"
                                   if n < 5 else
                                   f"6.5 sections per subject female/male = "
                                   f"{v.split('_')[1]}/{v.split('_')[2]}; subject bal_acc "
-                                  f"{_agg(g, 'subject', 'bal_acc')[0]:.3f}"})
+                                  f"{_agg(g, 'subject', 'bal_acc')[0]:.3f}{ref}"})
+    if (S2 / "interp_sensitivity.csv").exists():
+        g = pd.read_csv(S2 / "interp_sensitivity.csv")
+        mean, std, n = _agg(g, "subject", "auc")
+        rows.append({"model": "logreg", "selection": "none/no_interpolated",
+                     "representation": "sections", "level": "subject", "metric": "auc",
+                     "mean": mean, "std": std, "n_seeds": n,
+                     "notes": f"6.6 (added) all 855 features, only the {g['n_subjects'].iloc[0]} "
+                              "subjects with no interpolated channel (interpolation is more "
+                              "common in females); subject bal_acc "
+                              f"{_agg(g, 'subject', 'bal_acc')[0]:.3f}"})
     t = pd.DataFrame(rows, columns=TABLE_COLS)
     t[["mean", "std"]] = t[["mean", "std"]].round(6)
     return t
@@ -555,7 +591,7 @@ STEPS = {"summary": step_summary, "baselines": step_baselines, "in_fold": step_i
          "pooled": step_pooled, "permutation": step_permutation, "table": step_table,
          "age_clusters": step_age_clusters, "residualised": step_residualised,
          "stability": step_stability, "aggregation": step_aggregation,
-         "sectioning": step_sectioning}
+         "sectioning": step_sectioning, "interp_sensitivity": step_interp_sensitivity}
 
 
 def main(argv=None):

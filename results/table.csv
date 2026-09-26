@@ -68,3 +68,11 @@ mlp,pooled,long,subject,auc,0.750181,0.01597,5,"selection on all subjects before
 xgb,pooled,long,subject,bal_acc,0.679524,0.012508,5,"selection on all subjects before CV: leaks test labels (mirrors paper); coh, 5 bands (paper 3.3), EC, 19 ch, interpolated missing"
 xgb,pooled,long,subject,auc,0.753512,0.00842,5,"selection on all subjects before CV: leaks test labels (mirrors paper); coh, 5 bands (paper 3.3), EC, 19 ch, interpolated missing"
 svm_rbf,pooled,sections,subject,p_value,0.019608,,1,"50 subject-level label permutations, pooled selection recomputed each time (50 trials); real AUC 0.821 on 1 seed; reduced: permutations 100 -> 50"
+xgb,in_fold/age_young,sections,subject,auc,0.737056,0.027989,5,"6.1 trained and tested within the young cluster (138 subjects, 10 splits); subject bal_acc 0.656"
+xgb,in_fold/age_older,sections,subject,auc,0.5,0.053504,5,"6.1 trained and tested within the older cluster (63 subjects, 10 splits; 6-7 test subjects per fold, so fold AUCs are noisy); subject bal_acc 0.501"
+xgb,in_fold/age_residualised,sections,subject,auc,0.726829,0.028899,5,"6.2 age (bin midpoint) regressed out of all 855 inside each fold, then in-fold selection; subject bal_acc 0.664"
+xgb_selector,in_fold,-,selection,jaccard,0.171948,0.045197,5,"6.3 mean pairwise Jaccard of the 50 in-fold 34-sets; 303 features ever selected, 11 in at least half"
+xgb_selector,pooled,-,selection,overlap,8.0,,1,6.4 first-appearance vs mean-rank top 34: 8 shared
+xgb,in_fold/sections_5_5,sections,subject,auc,0.688816,0.036443,3,6.5 sections per subject female/male = 5/5 (1005 sections); seeds reduced 5 -> 3 (budget); subject bal_acc 0.635; main 8/5 on the same 3 seeds: 0.723 ± 0.022
+xgb,in_fold/sections_5_8,sections,subject,auc,0.693513,0.031388,3,6.5 sections per subject female/male = 5/8 (1389 sections); seeds reduced 5 -> 3 (budget); subject bal_acc 0.605; main 8/5 on the same 3 seeds: 0.723 ± 0.022
+logreg,none/no_interpolated,sections,subject,auc,0.754667,0.020217,5,"6.6 (added) all 855 features, only the 131 subjects with no interpolated channel (interpolation is more common in females); subject bal_acc 0.674"
