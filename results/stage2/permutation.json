@@ -1,0 +1,16 @@
+{
+ "model": "svm_rbf",
+ "representation": "sections",
+ "selection": "pooled",
+ "level": "subject",
+ "metric": "auc",
+ "real": 0.8213942307692307,
+ "p": 0.0196078431372549,
+ "n_permutations": 50,
+ "n_seeds": 1,
+ "n_trials": 50,
+ "seconds_per_permutation": 32.547810077667236,
+ "reductions": [
+  "permutations 100 -> 50"
+ ]
+}

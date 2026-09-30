@@ -12,3 +12,4 @@ __pycache__/
 *.fdt
 *.tar.gz
 tests/fixtures/*.fif
+!/results/*.npy

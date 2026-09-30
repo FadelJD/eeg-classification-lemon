@@ -275,8 +275,13 @@ def load_cache(cache_dir) -> dict:
 
 # ---------------------------------------------------------------- all subjects
 
+def _subject_cache_dir(cfg):
+    base = cfg["paths"].get("subject_cache_dir") or Path(cfg["paths"]["cache_dir"]) / "subjects"
+    return Path(base) / feature_hash(cfg)
+
+
 def _subject_cache_path(cfg, sub):
-    return Path(cfg["paths"]["cache_dir"]) / "subjects" / feature_hash(cfg) / f"{sub}.npz"
+    return _subject_cache_dir(cfg) / f"{sub}.npz"
 
 
 def _subject_features(path, cfg, sub):
@@ -300,8 +305,16 @@ def _subject_features(path, cfg, sub):
 
 
 def discover_subjects(cfg) -> list[str]:
+    """Subject folders under preproc_dir, plus subjects already in the per-subject cache.
+
+    The cache alone is enough to reassemble X.npy (e.g. new section counts) without raw files.
+    """
     root = Path(cfg["paths"]["preproc_dir"])
-    return sorted(p.name for p in root.iterdir() if p.is_dir())
+    subs = {p.name for p in root.iterdir() if p.is_dir()} if root.is_dir() else set()
+    cached = _subject_cache_dir(cfg)
+    if cached.is_dir():
+        subs |= {p.stem for p in cached.glob("*.npz")}
+    return sorted(subs)
 
 
 def extract_all(cfg) -> None:
@@ -318,7 +331,7 @@ def extract_all(cfg) -> None:
             skipped.append((sub, "no label in participants csv"))
             log.warning("%s: no label, skipped", sub)
             continue
-        if not path.exists():
+        if not path.exists() and not _subject_cache_path(cfg, sub).exists():
             skipped.append((sub, f"missing {cond} file"))
             log.warning("%s: %s not found, skipped", sub, path.name)
             continue
