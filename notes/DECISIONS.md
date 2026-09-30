@@ -23,3 +23,12 @@ Choices made during the stage-2 run, each with the alternative not taken. The mo
 - **D11. Permutation test uses 1 seed** (`permutation.n_seeds: 1`) and recomputes pooled selection from the permuted labels every time. The observed score in the p-value is recomputed the same way, so it can differ slightly from the 5-seed table mean. *Alternative:* 5 seeds per permutation, which is 5× the budget.
 - **D12. Stage-2 table has its own check.** `results/table.csv` now has the stage-2 columns (including `representation` and `notes`), so the old `run.py --check` format does not apply to it. `python scripts/stage2.py table --check` rebuilds the table from the committed per-fold CSVs in `results/stage2/` and diffs it at 1e-3.
 - **D13. Figures are static PNGs** (matplotlib), using the validated categorical slots, a one-hue blue ramp for magnitude, and blue↔red with a grey midpoint for female − male differences. The pooled-feature scalp plot is faceted by band (one colour per panel) rather than overlaying five colours on one head, which keeps the lines legible.
+
+## Step 6
+
+- **D14. "Best in-fold configuration" = xgb / sections** (subject AUC 0.72), the highest in-fold (model, representation) pair from step 2. It is used for 6.1, 6.2 and 6.5.
+- **D15. "Equal sections per class" = 5/5.** Every subject contributes 5 sections, the smaller of the committed counts, so no class gets extra samples. *Alternative:* 8/8, equally balanced but with more sections per subject (every subject has at least 13). Not run.
+- **D16. 6.5 run on 3 seeds.** Two ablations at 5 seeds were projected at about 55 min (> 45). The table notes add the committed 8/5 configuration on the same 3 seeds (0.723 ± 0.022) for a like-for-like comparison.
+- **D17. Older age cluster kept at 10 splits.** Both classes have ≥ 31 subjects, so 10 splits is allowed, but each test fold holds only 6–7 subjects. The AUC of 0.500 is an average of noisy fold AUCs (per-seed 0.41–0.56), and exactly 0.500 is a coincidence of the fold-size denominators. *Alternative:* 5 splits, for larger folds.
+- **D18. 6.6 added: interpolation sensitivity** (not in the brief, about 1 min). Step 0 showed interpolation is more common in females, a possible confound. Logistic regression on 855 features restricted to the 131 subjects with no interpolated channel is reported as one extra row.
+- **D19. Duplicate `5_table` timing rows** from rebuilding the table (to add extension rows) were collapsed to the first; the table build itself takes < 1 s.
