@@ -1,0 +1,107 @@
+# Every value carries its source: "paper: <value or ?>", "LEMON: <value>", or "GUESS".
+# Answers to notes/QUESTIONS.md land here; nothing in pipeline/ should need editing.
+
+paths:
+  data_dir: data                                   # LEMON: local layout, gitignored
+  preproc_dir: data/lemon_preproc                  # LEMON: one folder per subject
+  file_pattern: "{sub}/{sub}_{cond}.set"           # LEMON: sub-XXXXXX/sub-XXXXXX_EC.set (+ .fdt)
+  participants_csv: data/Participants_MPILMBB_LEMON.csv  # LEMON: pasted header
+  name_match_csv: data/name_match.csv              # LEMON: Initial_ID -> INDI_ID
+  cache_dir: cache                                 # GUESS: gitignored
+  results_dir: results                             # GUESS: table.csv committed, smoke/ ignored
+
+participants:
+  id_col: "ID"                                     # LEMON: pasted header, values like sub-032301
+  sex_col: "Gender_ 1=female_2=male"               # LEMON: pasted header
+  age_col: "Age"                                   # LEMON: pasted header, 5-year bins
+  sex_coding: {1: female, 2: male}                 # LEMON: column name says 1=female 2=male
+  positive_class: female                           # paper: predicts probability of female class (3.5)
+  use_name_match: false                            # LEMON: participants IDs already match folder names
+  name_match_from: "Initial_ID"                    # LEMON: pasted header
+  name_match_to: "INDI_ID"                         # LEMON: pasted header
+
+age_midpoints:                                     # LEMON: bins from pasted counts, midpoint = (lo+hi)/2
+  "20-25": 22.5                                    # LEMON: 79 subjects
+  "25-30": 27.5                                    # LEMON: 61
+  "30-35": 32.5                                    # LEMON: 13
+  "35-40": 37.5                                    # LEMON: 1
+  "55-60": 57.5                                    # LEMON: 4
+  "60-65": 62.5                                    # LEMON: 19
+  "65-70": 67.5                                    # LEMON: 25
+  "70-75": 72.5                                    # LEMON: 22
+  "75-80": 77.5                                    # LEMON: 4
+
+signal:
+  channels: [Fp1, Fp2, F7, F3, Fz, F4, F8, T7, C3, Cz, C4, T8, P7, P3, Pz, P4, P8, O1, O2]  # paper: 19 channels, this order
+  sfreq: 250.0                                     # paper: 250 Hz; LEMON: 250 Hz (check_headers)
+  condition: EC                                    # paper: ?; LEMON: EC or EO. GUESS, see QUESTIONS.md
+  reference: keep                                  # paper: ?; LEMON: preprocessed as delivered. GUESS (keep | average)
+  missing_channel_policy: interpolate               # paper: ?; LEMON: sub-032301 lacks T7. GUESS (skip | interpolate), see QUESTIONS.md
+  discard_start_s: 5.0                             # paper: first 5 s discarded (3.2)
+  epoch_s: 2.0                                     # paper: 2-s epochs (3.2)
+
+sections:
+  section_epochs: 15                               # paper: 30-s sections = 15 epochs
+  per_class: {female: 8, male: 5}                  # paper: 5 per female, 8 per male (150F/91M). LEMON is 82F/146M, see QUESTIONS.md
+  layout: consecutive                              # GUESS: non-overlapping, consecutive from the first kept epoch
+  aggregation: across_epochs                       # paper: coherence over all epochs of the section (3.3, Eq. 1); corr uses mean over epochs (GUESS)
+  long_epochs: 90                                  # paper: 3 min = 90 epochs for validation subjects (3.5)
+  long_start_epoch: 0                              # GUESS: which 3 minutes; first 90 kept epochs
+
+connectivity:
+  method: coh                                      # paper: coherence |E[Sxy]|/sqrt(E[Sxx]E[Syy]) (3.3). Choices: coh | plv | wpli | corr
+  mode: multitaper                                 # paper: ? (MNE default). GUESS
+  bands:                                           # paper: 3.3
+    delta: [0.0, 4.0]                              # paper: 0-4 Hz
+    theta: [4.0, 8.0]                              # paper: 4-8 Hz
+    alpha: [8.0, 13.0]                             # paper: 8-13 Hz
+    beta: [13.0, 30.0]                             # paper: 13-30 Hz
+    gamma: [30.0, 45.0]                            # paper: 30-45 Hz
+  band_edges: half_open_last_closed                # paper: ranges from 3.3; GUESS only which band a bin exactly on 4/8/13/30 Hz joins ([lo, hi), last [lo, hi])
+  corr_filter_order: 4                             # GUESS: Butterworth order for corr band-pass (zero-phase)
+
+selection:
+  n_trials: 50                                     # paper: 50 trials
+  subject_frac: 0.9                                # paper: 90% of subjects per trial
+  n_keep: 34                                       # paper: 34 features
+  importance_type: gain                            # paper: ? ("importance"). GUESS
+  aggregation: first_appearance                    # paper: earliest rank across trials wins. Alt: mean_rank
+  seed: 0                                          # GUESS
+  n_jobs: -1                                       # GUESS: trials run in parallel; results do not depend on it
+  xgb_params: {n_estimators: 100, max_depth: 3, learning_rate: 0.1, n_jobs: 1}  # paper: ?. GUESS
+
+cv:
+  n_splits: 10                                     # paper: 50 random 90/10 subject splits; here StratifiedGroupKFold. GUESS
+  seeds: [0, 1, 2, 3, 4]                           # GUESS
+  threshold: 0.5                                   # paper: tuned theta, best 0.39 for XGB. GUESS for balanced accuracy
+  test_representation: sections                    # paper: long (one 90-epoch sample per validation subject). GUESS (sections | long)
+  selection_modes: [pooled, in_fold]               # paper: pooled (selected on all subjects). in_fold is the leak-free check
+  residualise_age: false                           # GUESS: set true to regress age out of features inside each fold
+
+models: [xgb, mlp, svm_rbf, rf, logreg]            # paper: XGB, MLP, SVM, RF (3.5); logreg is our baseline
+
+model_params:                                      # paper: ? for all hyperparameters
+  xgb: {n_estimators: 100, max_depth: 3, learning_rate: 0.1, n_jobs: 1}  # GUESS
+  mlp: {hidden_layer_sizes: [64], max_iter: 1000}  # GUESS
+  svm_rbf: {C: 1.0, gamma: scale}                  # GUESS
+  rf: {n_estimators: 300, n_jobs: 1}               # GUESS
+  logreg: {C: 1.0, max_iter: 2000}                 # GUESS
+
+permutation:
+  n_permutations: 100                              # GUESS
+  n_seeds: 1                                       # GUESS: cv.seeds[:n_seeds] per permutation, to bound runtime
+  metric: auc                                      # GUESS: subject-level AUC
+  level: subject                                   # GUESS
+
+check:
+  tolerance: 0.001                                 # brief: --check diffs table.csv at 1e-3
+
+smoke:                                             # brief: overrides for run.py --smoke
+  n_trials: 3                                      # brief
+  seeds: [0, 1]                                    # brief: 2 seeds
+  n_splits: 3                                      # brief
+  n_permutations: 3                                # GUESS: keeps the smoke run under a few seconds
+  models: [xgb, logreg, rf, svm_rbf, mlp]          # GUESS
+  selection_xgb_params: {n_estimators: 20}         # GUESS: merged into selection.xgb_params for speed
+  selection_n_jobs: 1                              # GUESS: process start-up costs more than tiny fits
+  model_params: {rf: {n_estimators: 50}, xgb: {n_estimators: 20}}  # GUESS: merged into model_params for speed

@@ -1,11 +1,15 @@
 .venv/
 lemon_tars/
 lemon_preproc/
-data/
-cache/
+/data
+/cache
+/results/smoke
 __pycache__/
 .ipynb_checkpoints/
+.pytest_cache/
 *.npy
 *.set
 *.fdt
 *.tar.gz
+tests/fixtures/*.fif
+!/results/*.npy

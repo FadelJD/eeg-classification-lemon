@@ -1,0 +1,10 @@
+{
+ "n_sets": 50,
+ "jaccard_mean": 0.17194844384389968,
+ "jaccard_std": 0.04519725555677339,
+ "jaccard_min": 0.0625,
+ "jaccard_max": 0.3333333333333333,
+ "features_ever_selected": 303,
+ "features_in_all_sets": 0,
+ "features_in_half_or_more": 11
+}
