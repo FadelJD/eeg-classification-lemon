@@ -1,6 +1,6 @@
 # EEG sex classification from connectivity: LEMON reproduction
 
-A a conceptual replication of *Resting-state EEG sex classification using selected brain connectivity representation*. The paper's data is not available, so this runs on the MPI-Leipzig **LEMON** preprocessed resting-state EEG set instead.
+A conceptual replication of *Resting-state EEG sex classification using selected brain connectivity representation*. The paper's data is not available, so this runs on the MPI-Leipzig **LEMON** preprocessed resting-state EEG set instead.
 
 Pipeline: 19 channels, 2-s epochs, 30-s sections → coherence for 171 channel pairs × 5 bands (855 features) → XGBoost-importance selection of 34 features over 50 subject subsamples → subject-level cross-validation (XGB, MLP, SVM, RF, plus a logistic-regression baseline), with selection either pooled (as the paper does) or inside each fold (leak-free).
 
