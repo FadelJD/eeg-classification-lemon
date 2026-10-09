@@ -1,0 +1,36 @@
+Resting State EEG LEMON
+
+
+
+Resting state EEG recording design
+A 16 min resting state EEG (corresponding to 16 blocks each lasting for 1 min) consisted of eyes-closed (EC) and eyes-open (EO) conditions. EC and EO changed in every block which in total formed 8 blocks each. Half of the participants started the resting state EEG recording with EC condition, while another half with EO.
+
+
+
+I. Raw rsEEG data 
+
+The folder contains raw resting state EEG data files (Brain Vision files). 
+
+Marker coding: 
+S200 - eyes open rest
+S210 - eyes closed rest
+
+
+
+II. Preprocessed resting state EEG data
+
+The folder contains preprocessed EEG data files after removing ICA components separately for eyes-closed (EC) and eyes-open (EO) conditions. Each participant (N= 202) have 4 files (2 for EC condition and 2 for EO). These .set and .fdt files have the following naming structure:
+
+sub-BIDS_condition.fdt (.set)
+
+*condition: eyes closed (EC) or eyes open(EO)
+ BIDS number: 6-digit numbers created for data-paper (e.g., sub-032301)
+
+
+ 
+III. Digitized EEG channel locations
+
+Polhemus PATRIOT Motion Tracking System (Polhemus, Colchester, VT, USA) localizer together with the Brainstorm toolbox was used to digitize the exact location of each electrode on a participant's head relative to three fiducial points.
+
+
+

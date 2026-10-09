@@ -13,3 +13,4 @@ __pycache__/
 *.tar.gz
 tests/fixtures/*.fif
 !/results/*.npy
+EEG_Info
